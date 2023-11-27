@@ -4,26 +4,20 @@ import numpy as np
 import tensorflow as tf
 from src import ModelOptions
 from src import Cifar10Model, Places365Model, SimpsonsModel
-from .dataset import CIFAR10_DATASET, PLACES365_DATASET
 
 '''
 Run this with
-python finetune.py \
-  --checkpoints-path /checkpoints/places364 \        # checkpoints path
-  --test-input img/simpsons_small_test \         # test image(s) path
-  --test-output ./checkpoints/output 
-  --dataset simpsons
+python finetune.py --checkpoints-path checkpoints/places365 --dataset-path train_256 --dataset simpsons --batch-size 2 --epochs 4 --label-smoothing 1
 '''
 options = ModelOptions().parse()
-tf.reset_default_graph()
-
-tf.set_random_seed(options.seed)
+tf.compat.v1.reset_default_graph()
+tf.random.set_seed(options.seed)
 np.random.seed(options.seed)
 random.seed(options.seed)
 
 
 # create a session environment
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
 
     model = SimpsonsModel(sess, options)
 
@@ -35,7 +29,7 @@ with tf.Session() as sess:
         open(model.test_log_file, 'w').close()
 
     model.build()
-    sess.run(tf.global_variables_initializer())
+    sess.run(tf.compat.v1.global_variables_initializer())
     model.load()
-    # model.train()
-    model.test()
+    model.train()
+    # model.test()
