@@ -9,9 +9,10 @@ from .dataset import CIFAR10_DATASET, PLACES365_DATASET
 '''
 Run this with
 python finetune.py \
-  --checkpoints-path ./checkpoints \        # checkpoints path
-  --test-input ./checkpoints/test \         # test image(s) path
+  --checkpoints-path /checkpoints/places364 \        # checkpoints path
+  --test-input img/simpsons_small_test \         # test image(s) path
   --test-output ./checkpoints/output 
+  --dataset simpsons
 '''
 options = ModelOptions().parse()
 tf.reset_default_graph()
