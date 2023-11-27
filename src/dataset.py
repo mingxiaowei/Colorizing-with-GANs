@@ -1,13 +1,15 @@
 import os
 import glob
+import skimage
 import numpy as np
 import tensorflow as tf
-from scipy.misc import imread
+from imageio import imread
 from abc import abstractmethod
 from .utils import unpickle
 
 CIFAR10_DATASET = 'cifar10'
 PLACES365_DATASET = 'places365'
+SIMPSONS_DATASET = 'simpsons'
 
 
 class BaseDataset():
@@ -135,6 +137,25 @@ class Places365Dataset(BaseDataset):
                 data = np.array(glob.glob(self.path + '/val_256/*.jpg'))
                 np.savetxt(flist, data, fmt='%s')
 
+        return data
+
+class SimpsonsDataset(BaseDataset):
+
+    def __init__(self, path, training=True, augment=True):
+        super(SimpsonsDataset, self).__init__(SIMPSONS_DATASET, path, training, augment)
+
+    def load(self):
+        data = []
+        if self.training:
+            data_folder = os.path.join(os.getcwd(), 'dataset/train')
+        else:
+            data_folder = os.path.join(os.getcwd(), 'dataset/test')
+        for img in os.listdir(data_folder):
+            if img.endswith(".jpg"):
+                img_file = os.path.join(data_folder, img)
+                img = imread(img_file)
+                print(f'img shape: {img.shape}')
+                data.append(skimage.img_as_float(imread(img_file)))
         return data
 
 

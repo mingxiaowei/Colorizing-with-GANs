@@ -12,7 +12,7 @@ class Discriminator(object):
 
     def create(self, inputs, kernel_size=None, seed=None, reuse_variables=None):
         output = inputs
-        with tf.variable_scope(self.name, reuse=reuse_variables):
+        with tf.compat.v1.variable_scope(self.name, reuse=reuse_variables):
             for index, kernel in enumerate(self.kernels):
 
                 # not use batch-norm in the first layer
@@ -43,7 +43,7 @@ class Discriminator(object):
                 seed=seed
             )
 
-            self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)
+            self.var_list = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES, self.name)
 
             return output
 
@@ -60,7 +60,7 @@ class Generator(object):
     def create(self, inputs, kernel_size=None, seed=None, reuse_variables=None):
         output = inputs
 
-        with tf.variable_scope(self.name, reuse=reuse_variables):
+        with tf.compat.v1.variable_scope(self.name, reuse=reuse_variables):
 
             layers = []
 
@@ -118,6 +118,6 @@ class Generator(object):
                 seed=seed
             )
 
-            self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)
+            self.var_list = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES, self.name)
 
             return output

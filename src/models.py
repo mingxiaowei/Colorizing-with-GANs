@@ -9,7 +9,7 @@ from abc import abstractmethod
 from .networks import Generator, Discriminator
 from .ops import pixelwise_accuracy, preprocess, postprocess
 from .ops import COLORSPACE_RGB, COLORSPACE_LAB
-from .dataset import Places365Dataset, Cifar10Dataset, TestDataset
+from .dataset import Places365Dataset, Cifar10Dataset, TestDataset, SimpsonsDataset
 from .utils import stitch_images, turing_test, imshow, imsave, create_dir, visualize, Progbar
 
 
@@ -180,14 +180,15 @@ class BaseModel:
         kernel = 4
 
         # model input placeholder: RGB imaege
-        self.input_rgb = tf.placeholder(tf.float32, shape=(None, None, None, 3), name='input_rgb')
+        # self.input_rgb = tf.placeholder(tf.float32, shape=(None, None, None, 3), name='input_rgb')
+        self.input_rgb = tf.compat.v1.placeholder(tf.float32, shape=(None, None, None, 3), name='input_rgb')
 
         # model input after preprocessing: LAB image
         self.input_color = preprocess(self.input_rgb, colorspace_in=COLORSPACE_RGB, colorspace_out=self.options.color_space)
 
         # test mode: model input is a graycale placeholder
         if self.options.mode == 1:
-            self.input_gray = tf.placeholder(tf.float32, shape=(None, None, None, 1), name='input_gray')
+            self.input_gray = tf.compat.v1.placeholder(tf.float32, shape=(None, None, None, 1), name='input_gray')
 
         # train/turing-test we extract grayscale image from color image
         else:
@@ -215,28 +216,28 @@ class BaseModel:
 
         # learning rate decay
         if self.options.lr_decay and self.options.lr_decay_rate > 0:
-            self.learning_rate = tf.maximum(1e-6, tf.train.exponential_decay(
+            self.learning_rate = tf.maximum(1e-6, tf.compat.v1.train.exponential_decay(
                 learning_rate=self.options.lr,
                 global_step=self.global_step,
                 decay_steps=self.options.lr_decay_steps,
                 decay_rate=self.options.lr_decay_rate))
 
         # generator optimizaer
-        self.gen_train = tf.train.AdamOptimizer(
+        self.gen_train = tf.compat.v1.train.AdamOptimizer(
             learning_rate=self.learning_rate,
             beta1=self.options.beta1
         ).minimize(self.gen_loss, var_list=gen_factory.var_list)
 
         # discriminator optimizaer
-        self.dis_train = tf.train.AdamOptimizer(
+        self.dis_train = tf.compat.v1.train.AdamOptimizer(
             learning_rate=self.learning_rate / 10,
             beta1=self.options.beta1
         ).minimize(self.dis_loss, var_list=dis_factory.var_list, global_step=self.global_step)
 
-        self.saver = tf.train.Saver()
+        self.saver = tf.compat.v1.train.Saver()
 
     def load(self):
-        ckpt = tf.train.get_checkpoint_state(self.options.checkpoints_path)
+        ckpt = tf.compat.v1.train.get_checkpoint_state(self.options.checkpoints_path)
         if ckpt is not None:
             print('loading model...\n')
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
@@ -359,6 +360,50 @@ class Places365Model(BaseModel):
 
     def create_dataset(self, training=True):
         return Places365Dataset(
+            path=self.options.dataset_path,
+            training=training,
+            augment=self.options.augment)
+
+class SimpsonsModel(BaseModel):
+    def __init__(self, sess, options):
+        super(SimpsonsModel, self).__init__(sess, options)
+
+    def create_generator(self):
+        kernels_gen_encoder = [
+            (64, 1, 0),     # [batch, 256, 256, ch] => [batch, 256, 256, 64]
+            (64, 2, 0),     # [batch, 256, 256, 64] => [batch, 128, 128, 64]
+            (128, 2, 0),    # [batch, 128, 128, 64] => [batch, 64, 64, 128]
+            (256, 2, 0),    # [batch, 64, 64, 128] => [batch, 32, 32, 256]
+            (512, 2, 0),    # [batch, 32, 32, 256] => [batch, 16, 16, 512]
+            (512, 2, 0),    # [batch, 16, 16, 512] => [batch, 8, 8, 512]
+            (512, 2, 0),    # [batch, 8, 8, 512] => [batch, 4, 4, 512]
+            (512, 2, 0)     # [batch, 4, 4, 512] => [batch, 2, 2, 512]
+        ]
+
+        kernels_gen_decoder = [
+            (512, 2, 0),    # [batch, 2, 2, 512] => [batch, 4, 4, 512]
+            (512, 2, 0),    # [batch, 4, 4, 512] => [batch, 8, 8, 512]
+            (512, 2, 0),    # [batch, 8, 8, 512] => [batch, 16, 16, 512]
+            (256, 2, 0),    # [batch, 16, 16, 512] => [batch, 32, 32, 256]
+            (128, 2, 0),    # [batch, 32, 32, 256] => [batch, 64, 64, 128]
+            (64, 2, 0),     # [batch, 64, 64, 128] => [batch, 128, 128, 64]
+            (64, 2, 0)      # [batch, 128, 128, 64] => [batch, 256, 256, 64]
+        ]
+
+        return Generator('gen', kernels_gen_encoder, kernels_gen_decoder, training=self.options.training)
+
+    def create_discriminator(self):
+        kernels_dis = [
+            (64, 2, 0),     # [batch, 256, 256, ch] => [batch, 128, 128, 64]
+            (128, 2, 0),    # [batch, 128, 128, 64] => [batch, 64, 64, 128]
+            (256, 2, 0),    # [batch, 64, 64, 128] => [batch, 32, 32, 256]
+            (512, 1, 0),    # [batch, 32, 32, 256] => [batch, 32, 32, 512]
+        ]
+
+        return Discriminator('dis', kernels_dis, training=self.options.training)
+
+    def create_dataset(self, training=True):
+        return SimpsonsDataset(
             path=self.options.dataset_path,
             training=training,
             augment=self.options.augment)

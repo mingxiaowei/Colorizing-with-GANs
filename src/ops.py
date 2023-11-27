@@ -3,14 +3,14 @@ import tensorflow as tf
 
 COLORSPACE_RGB = 'RGB'
 COLORSPACE_LAB = 'LAB'
-tf.nn.softmax_cross_entropy_with_logits_v2
+tf.nn.softmax_cross_entropy_with_logits
 
 def conv2d(inputs, filters, name, kernel_size=4, strides=2, bnorm=True, activation=None, seed=None):
     """
     Creates a conv2D block
     """
-    initializer=tf.variance_scaling_initializer(seed=seed)
-    res = tf.layers.conv2d(
+    initializer=tf.compat.v1.variance_scaling_initializer(seed=seed)
+    res = tf.compat.v1.layers.conv2d(
         name=name,
         inputs=inputs,
         filters=filters,
@@ -20,7 +20,7 @@ def conv2d(inputs, filters, name, kernel_size=4, strides=2, bnorm=True, activati
         kernel_initializer=initializer)
 
     if bnorm:
-        res = tf.layers.batch_normalization(inputs=res, name='bn_' + name, training=True)
+        res = tf.compat.v1.layers.batch_normalization(inputs=res, name='bn_' + name, training=True)
 
     # activation after batch-norm
     if activation is not None:
@@ -33,8 +33,8 @@ def conv2d_transpose(inputs, filters, name, kernel_size=4, strides=2, bnorm=True
     """
     Creates a conv2D-transpose block
     """
-    initializer=tf.variance_scaling_initializer(seed=seed)
-    res = tf.layers.conv2d_transpose(
+    initializer=tf.compat.v1.variance_scaling_initializer(seed=seed)
+    res = tf.compat.v1.layers.conv2d_transpose(
         name=name,
         inputs=inputs,
         filters=filters,
@@ -44,7 +44,7 @@ def conv2d_transpose(inputs, filters, name, kernel_size=4, strides=2, bnorm=True
         kernel_initializer=initializer)
 
     if bnorm:
-        res = tf.layers.batch_normalization(inputs=res, name='bn_' + name, training=True)
+        res = tf.compat.v1.layers.batch_normalization(inputs=res, name='bn_' + name, training=True)
 
     # activation after batch-norm
     if activation is not None:

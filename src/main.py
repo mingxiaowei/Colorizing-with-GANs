@@ -3,30 +3,34 @@ import random
 import numpy as np
 import tensorflow as tf
 from .options import ModelOptions
-from .models import Cifar10Model, Places365Model
-from .dataset import CIFAR10_DATASET, PLACES365_DATASET
+from .models import Cifar10Model, Places365Model, SimpsonsModel
+from .dataset import CIFAR10_DATASET, PLACES365_DATASET, SIMPSONS_DATASET
 
 
 def main(options):
 
     # reset tensorflow graph
-    tf.reset_default_graph()
+    # tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
 
 
     # initialize random seed
-    tf.set_random_seed(options.seed)
+    tf.random.set_seed(options.seed)
     np.random.seed(options.seed)
     random.seed(options.seed)
 
 
     # create a session environment
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
 
         if options.dataset == CIFAR10_DATASET:
             model = Cifar10Model(sess, options)
 
         elif options.dataset == PLACES365_DATASET:
             model = Places365Model(sess, options)
+        
+        elif options.dataset == SIMPSONS_DATASET:
+            model = SimpsonsModel(sess, options)
 
         if not os.path.exists(options.checkpoints_path):
             os.makedirs(options.checkpoints_path)
@@ -37,7 +41,7 @@ def main(options):
 
         # build the model and initialize
         model.build()
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
 
 
         # load model only after global variables initialization
