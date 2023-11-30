@@ -4,6 +4,8 @@ import os
 import time
 import numpy as np
 import tensorflow as tf
+import skimage
+from skimage.color import rgb2gray
 
 from abc import abstractmethod
 from .networks import Generator, Discriminator
@@ -118,12 +120,15 @@ class BaseModel:
         print('\nTesting...')
         dataset = TestDataset(self.options.test_input or (self.options.checkpoints_path + '/test'))
         outputs_path = create_dir(self.options.test_output or (self.options.checkpoints_path + '/output'))
-
+        print(f'self.options.color_space: {self.options.color_space}')
         for index in range(len(dataset)):
             img_gray_path, img_gray = dataset[index]
             name = os.path.basename(img_gray_path)
             path = os.path.join(outputs_path, name)
-
+            # print(f'img_gray_path: {img_gray_path}, img_gray.shape: {img_gray.shape}')
+            # print(f'self.input_gray.shape: {self.input_gray.shape}')
+            if img_gray.ndim == 3 and img_gray.shape[2] == 3:
+                img_gray = rgb2gray(img_gray)
             feed_dic = {self.input_gray: img_gray[None, :, :, None]}
             outputs = self.sess.run(self.sampler, feed_dict=feed_dic)
             outputs = postprocess(tf.convert_to_tensor(outputs), colorspace_in=self.options.color_space, colorspace_out=COLORSPACE_RGB).eval() * 255
@@ -238,6 +243,7 @@ class BaseModel:
 
     def load(self):
         ckpt = tf.compat.v1.train.get_checkpoint_state(self.options.checkpoints_path)
+        print(f'ckpt: {ckpt}')
         if ckpt is not None:
             print('loading model...\n')
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
