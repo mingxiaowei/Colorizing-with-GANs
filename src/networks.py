@@ -101,7 +101,7 @@ class Generator(object):
 
                 if kernel[2] > 0:
                     keep_prob = 1.0 - kernel[2] if self.training else 1.0
-                    output = tf.nn.dropout(output, keep_prob=keep_prob, name='dropout_' + name, seed=seed)
+                    output = tf.compat.v1.nn.dropout(output, keep_prob=keep_prob, name='dropout_' + name, seed=seed)
 
                 # concat the layer from the contracting path with the output of the current layer
                 # concat only the channels (axis=3)
