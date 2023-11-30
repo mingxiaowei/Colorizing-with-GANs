@@ -51,7 +51,7 @@ class BaseDataset():
 
         return img
 
-    def generator(self, batch_size, recusrive=False):
+    def generator(self, batch_size, recusrive=True):
         start = 0
         total = len(self)
 
@@ -147,9 +147,9 @@ class SimpsonsDataset(BaseDataset):
     def load(self):
         data = []
         if self.training:
-            data_folder = os.path.join(os.getcwd(), 'dataset/train')
+            data_folder = os.path.join(os.getcwd(), 'train_256')
         else:
-            data_folder = os.path.join(os.getcwd(), 'dataset/test')
+            data_folder = os.path.join(os.getcwd(), 'test_256')
         for img in os.listdir(data_folder):
             if img.endswith(".jpg"):
                 img_file = os.path.join(data_folder, img)
