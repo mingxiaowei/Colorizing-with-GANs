@@ -3,7 +3,7 @@ In this work, we generalize the colorization procedure using a conditional Deep 
 
 ## Prerequisites
 - Linux
-- Tensorflow 1.7
+- Tensorflow ~~1.7~~ 2.0+ (code has been updated to allow compatibility with the latest version of Tensorflow)
 - NVIDIA GPU (12G or 24G memory) + CUDA cuDNN
 
 ## Getting Started
