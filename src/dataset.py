@@ -147,14 +147,13 @@ class SimpsonsDataset(BaseDataset):
     def load(self):
         data = []
         if self.training:
-            data_folder = os.path.join(os.getcwd(), 'train_256')
+            data_folder = os.path.join(os.getcwd(), './dataset/simpsons_train_256')
         else:
-            data_folder = os.path.join(os.getcwd(), 'test_256')
+            data_folder = os.path.join(os.getcwd(), './dataset/simpsons_val_256')
         for img in os.listdir(data_folder):
             if img.endswith(".jpg"):
                 img_file = os.path.join(data_folder, img)
                 img = imread(img_file)
-                print(f'img shape: {img.shape}')
                 data.append(skimage.img_as_float(imread(img_file)))
         return data
 

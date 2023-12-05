@@ -7,7 +7,13 @@ from src import Cifar10Model, Places365Model, SimpsonsModel
 
 '''
 Run this with
-python finetune.py --checkpoints-path checkpoints/places365 --dataset-path train_256 --dataset simpsons --batch-size 2 --epochs 4 --label-smoothing 1
+python finetune.py \
+    --checkpoints-path ./checkpoints/simpsons \
+    --dataset-path ./dataset/simpsons_train \
+    --dataset simpsons \
+    --batch-size 2 \
+    --epochs 4 \
+    --label-smoothing 1
 '''
 options = ModelOptions().parse()
 tf.compat.v1.reset_default_graph()
