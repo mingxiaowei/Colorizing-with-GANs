@@ -3,17 +3,30 @@ import random
 import numpy as np
 import tensorflow as tf
 from src import ModelOptions
-from src import Cifar10Model, Places365Model, SimpsonsModel
+from src import SimpsonsModel
 
 '''
 Run this with
 python finetune.py \
-    --checkpoints-path ./checkpoints/simpsons \
-    --dataset-path ./dataset/simpsons_train \
+    --checkpoints-path ./checkpoints/simpsons11 \
+    --dataset-path ./dataset/simpsons_train_256 \
     --dataset simpsons \
-    --batch-size 2 \
-    --epochs 4 \
-    --label-smoothing 1
+    --batch-size 40 \
+    --epochs 100 \
+    --lr 5e-4 \
+    --save-interval 80 \
+    --lr-decay-rate 0.5 \
+    --lr-decay-steps 50 \
+    --validate 1 \
+    --validate-interval 1 \
+    --log 1 \
+    --sample-interval 10
+
+To test: 
+python test.py \
+  --checkpoints-path ./checkpoints/simpsons11 \
+  --test-input ./dataset/test256 \
+  --test-output ./output/test 
 '''
 options = ModelOptions().parse()
 tf.compat.v1.reset_default_graph()
@@ -36,6 +49,8 @@ with tf.compat.v1.Session() as sess:
 
     model.build()
     sess.run(tf.compat.v1.global_variables_initializer())
-    model.load()
+    # model.load()
+    model.load_pretrained('./checkpoints/places365/')
+    # model.learning_rate = tf.constant(1e-5)
     model.train()
     # model.test()

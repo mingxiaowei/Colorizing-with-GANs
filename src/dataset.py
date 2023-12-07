@@ -72,7 +72,7 @@ class BaseDataset():
                 start = 0
 
             else:
-                raise StopIteration
+                return
 
     @property
     def data(self):
@@ -154,8 +154,14 @@ class SimpsonsDataset(BaseDataset):
             if img.endswith(".jpg"):
                 img_file = os.path.join(data_folder, img)
                 img = imread(img_file)
-                data.append(skimage.img_as_float(imread(img_file)))
+                data.append(imread(img_file))
         return data
+    
+    def generator(self, batch_size, recusrive=False):
+        try:
+            yield from super().generator(batch_size, recusrive)
+        except StopIteration:
+            return 
 
 
 class TestDataset(BaseDataset):
@@ -168,11 +174,16 @@ class TestDataset(BaseDataset):
         return path, img
 
     def load(self):
-
+        print(f'self.path: {self.path}')
         if os.path.isfile(self.path):
             data = [self.path]
 
         elif os.path.isdir(self.path):
             data = list(glob.glob(self.path + '/*.jpg')) + list(glob.glob(self.path + '/*.png'))
+        
+        else:
+            p = os.path.join(os.getcwd(), self.path)
+            data = list(glob.glob(p + '/*.jpg')) + list(glob.glob(p + '/*.png'))
 
         return data
+ 

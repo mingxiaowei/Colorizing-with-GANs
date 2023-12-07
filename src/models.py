@@ -243,7 +243,13 @@ class BaseModel:
 
     def load(self):
         ckpt = tf.compat.v1.train.get_checkpoint_state(self.options.checkpoints_path)
+        if ckpt is None:
+            ckpt_path = os.path.join(os.getcwd(), self.options.checkpoints_path)
+            print(f'ckpt_path: {ckpt_path}')
+            ckpt = tf.compat.v1.train.get_checkpoint_state(ckpt_path)
         print(f'ckpt: {ckpt}')
+        # if ckpt is None:
+        #     raise Exception('No checkpoint found...')
         if ckpt is not None:
             print('loading model...\n')
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
@@ -273,6 +279,23 @@ class BaseModel:
         step = self.sess.run(self.global_step)
 
         return lossD, lossD_fake, lossD_real, lossG, lossG_l1, lossG_gan, acc, step
+    
+    def load_pretrained(self, checkpoints_path):
+        ckpt = tf.compat.v1.train.get_checkpoint_state(checkpoints_path)
+        if ckpt is None:
+            ckpt_path = os.path.join(os.getcwd(), checkpoints_path)
+            print(f'ckpt_path: {ckpt_path}')
+            ckpt = tf.compat.v1.train.get_checkpoint_state(ckpt_path)
+        print(f'ckpt: {ckpt}')
+        if ckpt is None:
+            raise Exception('No checkpoint found...')
+        if ckpt is not None:
+            print('loading model...\n')
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            self.saver.restore(self.sess, os.path.join(checkpoints_path, ckpt_name))
+            return True
+
+        return False
 
     @abstractmethod
     def create_generator(self):
