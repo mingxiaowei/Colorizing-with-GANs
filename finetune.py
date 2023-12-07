@@ -49,8 +49,7 @@ with tf.compat.v1.Session() as sess:
 
     model.build()
     sess.run(tf.compat.v1.global_variables_initializer())
-    # model.load()
+    # model.load() # uncomment this line and comment out the line below to load the model from the specified checkpoint path
     model.load_pretrained('./checkpoints/places365/')
-    # model.learning_rate = tf.constant(1e-5)
+    # model.learning_rate = tf.constant(1e-5) # uncomment this line to use a customized, constant learning rate
     model.train()
-    # model.test()
